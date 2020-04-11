@@ -4,8 +4,24 @@
     <!-- meta -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
-<link rel="icon" type="image/x-icon" href="/images/giblog-logo.png">
+<link rel="icon" type="image/x-icon" href="/images/mojodoc-logo.png">
 <link rel="stylesheet" type="text/css" href="/css/common.css">
+
+<script type="text/javascript" src="/js/jquery-1.9.0.min.js"></script>
+<script type="text/javascript" src="/js/google-code-prettify/prettify.js"></script>
+<link  type="text/css" rel="stylesheet" href="/js/google-code-prettify/prettify.css"/>
+
+<script>
+  $(function(){
+    // google code prettifyの有効化
+    $("pre").addClass("prettyprint");
+    function init(event){
+      prettyPrint();
+    }
+    if(window.addEventListener)window.addEventListener("load",init,false);
+    else if(window.attachEvent)window.attachEvent("onload",init);
+  });
+</script>
 
 <title>How to use Giblog😁 - Mojoliciousドキュメント 日本語訳</title>
 <meta name="description" content="How to use Giblog.">
@@ -29,11 +45,11 @@
 
   </div>
   <div class="middle">
-    <h2><a href="/blog/20190319121234.html">How to use Giblog😁</a></h2>
+    <h4><a href="/blog/20190319121234.html">How to use Giblog😁</a></h4>
 <p>
   How to use Giblog.
 </p>
-<h3>Create web site</h3>
+<h5>Create web site</h5>
 <p>
   Create web site by new command.
 </p>
@@ -53,14 +69,14 @@ giblog new_blog mysite
 <pre>
 cd mysite
 </pre>
-<h3>Add new entry</h3>
+<h5>Add new entry</h5>
 <p>
   Add new entry by add command.
 </p>
 <pre>
 giblog add
 </pre>
-<h3>Build</h3>
+<h5>Build</h5>
 <p>
   Build web site.
 </p>
@@ -70,7 +86,7 @@ giblog build
 <p>
   If you want to customize build process, you open lib/Giblog/Command/Build.pm and edit run subroutine.
 </p>
-<h3>Serve</h3>
+<h5>Serve</h5>
 <p>
   You can serve your web site by morbo command if you have Mojolicious.
 </p>
@@ -80,7 +96,7 @@ morbo serve.pl
 <p>
   build command is automatically executed after editting files in templates directory.
 </p>
-<h3>Examples</h3>
+<h5>Examples</h5>
 <p>
   Some examples.
 </p>
@@ -90,7 +106,7 @@ morbo serve.pl
 <div>
   Hello
 </div>
-<h4>Sub header</h4>
+<h6>Sub header</h6>
 <pre>
 &lt;&gt;&lt;&gt;&lt;&gt;
 </pre>
@@ -128,20 +144,27 @@ morbo serve.pl
           <!-- side -->
 <div class="side-list">
   <div class="side-list-title">
-    Side Bar
+  　ドキュメント
   </div>
   <ul>
-    <li><a href="/list.html">Entries</a></li>
-    <li>Bar</li>
-    <li>Baz</li>
+    <li><a href="/Mojolicious::Guides.html">Mojoliciousガイド</a></li>
+    <li><a href="/mojo-api-reference.html">Mojolicious API リファレンス</a></li>
   </ul>
 </div>
 
         </div>
       </div>
       <div class="footer">
-        <!-- footer -->
-<a href="https://github.com/yuki-kimoto/giblog">Giblog</a>
+        <div class="kimoto_system_link">
+  <a href="https://kimoto-system.co.jp">
+    <img src="https://kimoto-system.co.jp/images/kimoto-system-logo.png" alt="Perl Webシステム開発">
+    Perl Webシステム開発の木本システム
+  </a>
+</div>
+
+<div class="copyright">
+  Copyright © Yuki Kimoto
+</div>
 
       </div>
     </div>
