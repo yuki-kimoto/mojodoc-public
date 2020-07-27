@@ -23,7 +23,9 @@
   });
 </script>
 
-<title>Mojolicious::Guides::Tutorial - Mojoliciousをはじめよう - Mojoliciousドキュメント 日本語訳</title>
+<title>
+
+ - Mojoliciousドキュメント 日本語訳</title>
 <meta name="description" content="Mojolicious::Liteの特徴を簡単なサンプルで紹介していきます。 ここで学んだことは、ほとんどすべてがフルバージョンのMojoliciousアプリケーションにも当てはまります。">
   </head>
   <body>
@@ -45,14 +47,974 @@
 
   </div>
   <div class="middle">
-    <html><head><title>名前</title>
+    <!-- <h2><a href="/Mojolicious::Guides::Tutorial.html">
+
+</a><p>Mojolicious::Liteの特徴を簡単なサンプルで紹介していきます。 ここで学んだことは、ほとんどすべてがフルバージョンのMojoliciousアプリケーションにも当てはまります。</p>
+
+<p>チュートリアルは<a href="/Mojolicious::Guides.html">Mojolicious::Guides</a>のはじめの章です。その他のガイドでは、各トピックについて深く掘り下げます。たとえば、<a href="/Mojolicious::Lite.html">Mojolicious::Lite</a>のプロトタイプをしっかり構築した<a href="/Mojolicious.html">Mojolicious</a> アプリケーションに育てるための<a href="/Mojolicious::Guides::Growing.html">growing</a>、または<a href="/Mojolicious::Guides::Routing.html">routing</a>、 <a href="/Mojolicious::Guides::Rendering.html">rendering</a>、その他にもたくさんあります。これを読み終わった後は、残りのガイドを読むことををおすすめします。</p>
+
+<h4><a class='u'
+name="Hello_World!"
+>Hello World!</a></h4>
+
+<p>かんたんなHello Worldアプリケーションはこのようになります。<code>strict</code>,
+<code>warnings</code>,
+<code>utf8</code> 、Perl 5.10の<code>features|feature</code> が自動的に有効になり、 <a href="/Mojolicious::Lite.html">Mojolicious::Lite</a>の<code>functions</code> がいくつかインポートされます。 <a href="/Mojolicious::Lite.html">Mojolicious::Lite</a>を使うと、あなたのスクリプトは完全な機能を備えたウェブアプリケーションになります。</p>
+
+<pre>#!/usr/bin/env perl
+use Mojolicious::Lite;
+
+get '/' =&gt; sub {
+  my $c = shift;
+  $c-&gt;render(text =&gt; 'Hello World!');
+};
+
+app-&gt;start;</pre>
+
+<p><a href="/Mojolicious::Command::Author::generate::lite_app.html">Mojolicious::Command::Author::generate::lite_app</a> には、小さなアプリケーションサンプルを生成するためのヘルパーコマンドがあります。</p>
+
+<pre>$ mojo generate lite_app myapp.pl</pre>
+
+<h4><a class='u'
+name="_"
+>コマンド</a></h4>
+
+<p>多くの<a href="/Mojolicious::Commands.html">commands</a> が自動的にコマンドラインから利用できるようになります。CGIまたは<a href="/PSGI.html">PSGI</a> のどちらの環境であるかは自動的に検知されるため、通常はコマンドで指定しなくても動作します。</p>
+
+<pre>$ ./myapp.pl daemon
+Server available at http://127.0.0.1:3000.
+
+$ ./myapp.pl daemon --listen http://*:8080
+Server available at http://127.0.0.1:8080.
+
+$ ./myapp.pl cgi
+...CGI output...
+
+$ ./myapp.pl get /
+Hello World!
+
+$ ./myapp.pl
+...利用可能なコマンドが表示(または自動的に環境が検知される)...</pre>
+
+<p><a href="/Mojolicious.html">Mojolicious</a>の<code>start</code> (<code>app->start</code>)を呼び出すと、コマンドシステムが開始されます。この呼び出しはアプリケーションの最後に置くべきです。というのは、返り値が大きな影響をもつ場合があるからです。</p>
+
+<pre># @ARGVを使ってコマンドを取得する
+app-&gt;start;
+
+# "daemon"コマンドを開始する
+app-&gt;start('daemon', '-l', 'http://*:8080');</pre>
+
+<h4><a class='u'
+name="_"
+>リロード</a></h4>
+
+<p>開発用サーバーの<code>morbo</code>でアプリケーションを起動すれば、 アプリケーションは自動的にリロードされます。ソースコードを変更した後に毎回サーバを再起動させる必要はありません。</p>
+
+<pre>$ morbo myapp.pl
+Server available at http://127.0.0.1:3000.</pre>
+
+<p>アプリケーションのデプロイ方法について詳しい情報は、 <a href="/Mojolicious::Guides::Cookbook.html">Mojolicious::Guides::Cookbook</a>の<code>デプロイメント</code>の項目を見てください。</p>
+
+<h4><a class='u'
+name="(Routes)"
+>ルーティング(Routes)</a></h4>
+
+<p>ルーティング(routes)とは、一般的にいうと異なる種類のプレースホルダを含むことのできる仮想的なパスのことです。通常はアクションにつながっており、リクエストURLのパス部分にマッチしたときに実行されます。すべてのアクション（<code>$self</code>）に渡される第一引数は、<a href="/Mojolicious::Controller.html">Mojolicious::Controller</a>のインスタンスです。これにはHTTPリクエストとレスポンスが含まれています。</p>
+
+<pre>use Mojolicious::Lite;
+
+# テキストをレンダリングするアクションへのルーティング
+get '/foo' =&gt; sub {
+  my $c = shift;
+  $c-&gt;render(text =&gt; 'Hello World!');
+};
+
+app-&gt;start;</pre>
+
+<p>レスポンスコンテントの多くは <a href="/Mojolicious::Controller.html">Mojolicious::Controller</a>の<code>render</code>を使ったアクションによって生成されます。詳しくは後ほど。</p>
+
+<h4><a class='u'
+name="GET/POST"
+>GET/POSTパラメーター</a></h4>
+
+<p>すべての<code>GET</code>と<code>POST</code>パラメーターは<a href="/Mojolicious::Controller.html">Mojolicious::Controller</a>の<code>param</code>を通じてアクセスできます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# /foo?user=sri
+get '/foo' =&gt; sub {
+  my $c    = shift;
+  my $user = $c-&gt;param('user');
+  $c-&gt;render(text =&gt; "Hello $user.");
+};
+
+app-&gt;start;</pre>
+
+<h4><a class='u'
+name="_"
+>スタッシュとテンプレート</a></h4>
+
+<p><a href="/Mojolicious::Controller.html">Mojolicious::Controller</a> の<code>stash</code>はデータをテンプレートに渡すために利用します。テンプレートは<code>DATA</code>セクションに埋め込むことができます。<code>template</code>、<code>text</code>、<code>data</code>などのいくつかがスタッシュの値として予約されており、<a href="/Mojolicious::Controller.html">Mojolicious::Controller</a>の<code>render</code>で使われて、レスポンスをどのように生成するかが決定されます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# テンプレートを描画するアクションに至るルート
+get '/foo' =&gt; sub {
+  my $c = shift;
+  $c-&gt;stash(one =&gt; 23);
+  $c-&gt;render(template =&gt; 'magic', two =&gt; 24);
+};
+
+app-&gt;start;
+__DATA__;
+
+@@ magic.html.ep
+The magic numbers are &lt;%= $one %&gt; and &lt;%= $two %&gt;.</pre>
+
+<p>テンプレートについて詳しい情報は <a href="/Mojolicious::Guides::Rendering.html">Mojolicious::Guides::Rendering</a>の<code>埋め込みPerl</code>の項を見てください。</p>
+
+<h4><a class='u'
+name="HTTP"
+>HTTP</a></h4>
+
+<p><a href="/Mojolicious::Controller.html">Mojolicious::Controller</a>の<code>req</code>と<a href="/Mojolicious::Controller.html">Mojolicious::Controller</a>の<code>res</code> を使って、HTTPの機能と情報のすべてに完全にアクセスすることができます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# リクエストの情報にアクセス
+get '/agent' =&gt; sub {
+  my $c    = shift;
+  my $host = $c-&gt;req-&gt;url-&gt;to_abs-&gt;host;
+  my $ua   = $c-&gt;req-&gt;headers-&gt;user_agent;
+  $c-&gt;render(text =&gt; "Request by $ua reached $host.");
+};
+
+# リクエストボディをエコーして、レスポンスのついたカスタムヘッダを送信
+post '/echo' =&gt; sub {
+  my $c = shift;
+  $c-&gt;res-&gt;headers-&gt;header('X-Bender' =&gt; 'Bite my shiny metal ass!');
+  $c-&gt;render(data =&gt; $c-&gt;req-&gt;body);
+};
+
+app-&gt;start;</pre>
+
+<p><a href="/Mojolicious::Command::get.html">Mojolicious::Command::get</a>を使って、 コマンドラインからより発展的なサンプルをテストできます。</p>
+
+<pre>$ ./myapp.pl get -v -M POST -c 'test' /echo</pre>
+
+<h4><a class='u'
+name="JSON"
+>JSON</a></h4>
+
+<p>JSONは、ウェブサービスでもっともよく使われるデータ交換フォーマットです。 <a href="/Mojolicious.html">Mojolicious</a>はJSONが大好きです。ピュアPerlの実装ではおそらく最速の <a href="/Mojo::JSON.html">Mojo::JSON</a> が組み込まれており、<a href="/Mojo::Message.html">Mojo::Message</a>の<code>json</code> または予約済みスタッシュ値の<code>json</code>によってアクセスできます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# 受け取ったJSONドキュメントを変更して返す
+put '/reverse' =&gt; sub {
+  my $c    = shift;
+  my $hash = $c-&gt;req-&gt;json;
+  $hash-&gt;{message} = reverse $hash-&gt;{message};
+  $c-&gt;render(json =&gt; $hash);
+};
+
+app-&gt;start;</pre>
+
+<p>コマンドラインから<a href="/Mojolicious::Command::get.html">Mojolicious::Command::get</a>を使ってJSONドキュメントを送信できます。</p>
+
+<pre>$ ./myapp.pl get -M PUT -c '{"message":"Hello Mojo!"}' /reverse</pre>
+
+<h4><a class='u'
+name="(exception)(not_found)"
+>組み込みの例外(<code>exception</code>)とノットファウンド(<code>not_found</code>)ページ</a></h4>
+
+<p>開発中、間違いを犯したときはいつでも、 このページに遭遇するでしょう。ここには、素晴らしい、アプリケーションのデバックに役立つ 情報がたくさん含まれています。</p>
+
+<pre>use Mojolicious::Lite;
+
+# Not found (404)
+get '/missing' =&gt; sub { shift-&gt;render(template =&gt; 'does_not_exist') };
+
+# Exception (500)
+get '/dies' =&gt; sub { die 'Intentional error' };
+
+app-&gt;start;</pre>
+
+<p><a href="/Mojolicious::Command::get.html">Mojolicious::Command::get</a> でCSSセレクタを使えば、実際に知りたい情報だけを取り出すこともできます。</p>
+
+<pre>$ ./myapp.pl get /dies '#error'</pre>
+
+<p>ページに情報が見えすぎるからといって心配しないでください。これが有効になるのは開発中だけです。プロダクション環境では、大切な情報が表示されないページに自動的に置き換わります。</p>
+
+<h4><a class='u'
+name="_"
+>ルーティング名</a></h4>
+
+<p>すべてのルーティング(routes)には名前を付けることができます。名前を付けることによってテンプレートの自動検出や<a href="/Mojolicious::Controller.html">Mojolicious::Controller</a>の<code>url_for</code>による逆引きができるようになり、<a href="/Mojolicious::Plugin::TagHelpers.html">Mojolicious::Plugin::TagHelpers</a>の<code>link_to</code>など、多くのヘルパーやメソッドがこれに基づいて動きます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# "index.html.ep"というテンプレートを描画
+get '/' =&gt; sub {
+  my $c = shift;
+  $c-&gt;render;
+} =&gt; 'index';
+
+# "hello.html.ep"というテンプレートを描画
+# "hello.html.ep"というテンプレートを描画
+
+app-&gt;start;
+__DATA__;
+
+__DATA__;
+__DATA__;
+&lt;%= link_to Reload =&gt; 'index' %&gt;.
+
+@@ hello.html.ep
+Hello World!</pre>
+
+<p>名前がないルートには、自動生成されたルート名が割り当てられます。この名前は、ルート自身の名前からノンワード文字を除いたものと同じです。</p>
+
+<h4><a class='u'
+name="_"
+>レイアウト</a></h4>
+
+<p>テンプレートにはレイアウトを持たせることができます。レイアウトは<a href="/Mojolicious::Plugin::DefaultHelpers.html">Mojolicious::Plugin::DefaultHelpers</a>の<code>layout</code>ヘルパーを使って選択することができ、<a href="/Mojolicious::Plugin::DefaultHelpers.html">Mojolicious::Plugin::DefaultHelpers</a>の<code>content</code>ヘルパーを使って現在のテンプレートの結果を入れることができます。</p>
+
+<pre>use Mojolicious::Lite;
+
+get '/with_layout';
+
+app-&gt;start;
+__DATA__;
+
+@@ with_layout.html.ep
+% title 'Green';
+% layout 'green';
+Hello World!
+
+@@ layouts/green.html.ep
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;&lt;title&gt;&lt;%= title %&gt;&lt;/title&gt;&lt;/head&gt;
+  &lt;body&gt;&lt;%= content %&gt;&lt;/body&gt;
+&lt;/html&gt;</pre>
+
+<p>スタッシュや<a href="/Mojolicious::Plugin::DefaultHelpers.html">Mojolicious::Plugin::DefaultHelpers</a>の<code>title</code>のようなヘルパーを使うと、追加のデータをレイアウトに渡せます。</p>
+
+<h4><a class='u'
+name="_"
+>ブロック</a></h4>
+
+<p>テンプレートブロックは通常のPerl関数のように利用でき、常に<code>begin</code>と<code>end</code>というキーワードで区切ります。これは多くのヘルパーの基盤になっています。</p>
+
+<pre>use Mojolicious::Lite;
+
+use Mojolicious::Lite;
+
+app-&gt;start;
+__DATA__;
+
+@@ block.html.ep
+% my $link = begin
+  % my ($url, $name) = @_;
+  Try &lt;%= link_to $url =&gt; begin %&gt;&lt;%= $name %&gt;&lt;% end %&gt;.
+% end
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;&lt;title&gt;Sebastians frameworks&lt;/title&gt;&lt;/head&gt;
+  &lt;body&gt;
+    %= $link-&gt;('http://mojolicious.org', 'Mojolicious')
+    %= $link-&gt;('http://catalystframework.org', 'Catalyst')
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+<h4><a class='u'
+name="_"
+>ヘルパー</a></h4>
+
+<p>ヘルパーは <a href="/Mojolicious::Lite.html">Mojolicious::Lite</a>の<code>helper</code> キーワードで作ることができる小さな関数です。アクションからテンプレートまでアプリケーション全体において利用することができます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# 訪問者を特定するヘルパー
+helper whois =&gt; sub {
+  my $c     = shift;
+  my $agent = $c-&gt;req-&gt;headers-&gt;user_agent || 'Anonymous';
+  my $ip    = $c-&gt;tx-&gt;remote_address;
+  return "$agent ($ip)";
+};
+
+# アクションとテンプレートのなかでヘルパーを使う
+get '/secret' =&gt; sub {
+  my $c    = shift;
+  my $user = $c-&gt;whois;
+  $c-&gt;app-&gt;log-&gt;debug("Request from $user");
+};
+
+app-&gt;start;
+__DATA__;
+
+@@ secret.html.ep
+We know who you are &lt;%= whois %&gt;.</pre>
+
+<p>すべての組み込みヘルパーのリストは、 <a href="/Mojolicious::Plugin::DefaultHelpers.html">Mojolicious::Plugin::DefaultHelpers</a> と <a href="/Mojolicious::Plugin::TagHelpers.html">Mojolicious::Plugin::TagHelpers</a>にあります。</p>
+
+<h4><a class='u'
+name="_"
+>プレースホルダー</a></h4>
+
+<p>ルーティング(routes)プレースホルダを使用すると、区切り文字の / あるいは . が出現するまでの部分を、リクエストパスからキャプチャできます。結果は<a href="/Mojolicious::Controller.html">Mojolicious::Controller</a>の<code>stash</code>と<code>param</code>を通じて利用できます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# /foo/test
+# /foo/test123
+get '/foo/:bar' =&gt; sub {
+  my $c   = shift;
+  my $bar = $c-&gt;stash('bar');
+  $c-&gt;render(text =&gt; "Our :bar placeholder matched $bar");
+};
+
+# /testsomething/foo
+# /test123something/foo
+get '/&lt;:bar&gt;something/foo' =&gt; sub {
+  my $c   = shift;
+  my $bar = $c-&gt;param('bar');
+  $c-&gt;render(text =&gt; "Our :bar placeholder matched $bar");
+};
+
+app-&gt;start;</pre>
+
+<p>プレースホルダーを周囲の文字列と区別するためには、 <code><</code> と <code>></code> で囲みます。こうした場合、プレフィックスのコロンはオプションになります。</p>
+
+<h4><a class='u'
+name="_"
+>リラックスプレースホルダー</a></h4>
+
+<p>リラックスプレースホルダーを使えば、 <code>/</code>が出現するまでのすべてにマッチさせることができます。これは正規表現の<code>([^/]+)</code>に似ています。</p>
+
+<pre>use Mojolicious::Lite;
+
+use Mojolicious::Lite;
+# /hello/test.html
+get '/hello/*you' =&gt; 'groovy';
+
+app-&gt;start;
+__DATA__;
+
+__DATA__;
+Your name is &lt;%= $you %&gt;.</pre>
+
+<h4><a class='u'
+name="_"
+>ワイルドカードプレースホルダー</a></h4>
+
+<p>ワイルドカードプレースホルダを使用すると、<code>/</code>と<code>.</code>を含むすべてにマッチさせることができます。正規表現の<code>(.+)</code>に似ています。</p>
+
+<pre>use Mojolicious::Lite;
+
+use Mojolicious::Lite;
+# /hello/test123
+# /hello/test.123/test/123
+get '/hello/*you' =&gt; 'groovy';
+
+app-&gt;start;
+__DATA__;
+
+__DATA__;
+Your name is &lt;%= $you %&gt;.</pre>
+
+<h4><a class='u'
+name="HTTP"
+>HTTPメソッド</a></h4>
+
+<p>ルーティングは <a href="/Mojolicious::Lite/.html">Mojolicious::Lite/</a>の<code>get</code> や <a href="/Mojolicious::Lite.html">Mojolicious::Lite</a>の<code>any</code>といったキーワードによって特定のリクエストメソッドに限定できます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# "hello.html.ep"というテンプレートを描画
+# "hello.html.ep"というテンプレートを描画
+  my $c = shift;
+  $c-&gt;render(text =&gt; 'Hello World!');
+};
+
+# PUT /hello
+put '/hello' =&gt; sub {
+  my $c    = shift;
+  my $size = length $c-&gt;req-&gt;body;
+  $c-&gt;render(text =&gt; "You uploaded $size bytes to /hello.");
+};
+
+# GET|POST|PATCH /bye
+any ['GET', 'POST', 'PATCH'] =&gt; '/bye' =&gt; sub {
+  my $c = shift;
+  $c-&gt;render(text =&gt; 'Bye World!');
+};
+
+# * /whatever
+any '/whatever' =&gt; sub {
+  my $c      = shift;
+  my $method = $c-&gt;req-&gt;method;
+  $c-&gt;render(text =&gt; "You called /whatever with $method.");
+};
+
+app-&gt;start;</pre>
+
+<h4><a class='u'
+name="_"
+>プレースホルダーのオプション</a></h4>
+
+<p>すべてのプレースホルダーは値を必要としますが、 プレースホルダーにデフォルト値を設定することにより キャプチャをオプショナルなものにすることができます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# /hello
+# /hello/Sara
+get '/hello/:name' =&gt; {name =&gt; 'Sebastian', day =&gt; 'Monday'} =&gt; sub {
+  my $c = shift;
+  $c-&gt;render(template =&gt; 'groovy', format =&gt; 'txt');
+};
+
+app-&gt;start;
+__DATA__;
+
+@@ groovy.txt.ep
+My name is &lt;%= $name %&gt; and it is &lt;%= $day %&gt;.</pre>
+
+<p>プレースホルダーに所属しないデフォルト値は、 いつでも単純にスタッシュにマージされます。</p>
+
+<h4><a class='u'
+name="_"
+>制約的なプレースホルダー</a></h4>
+
+<p>プレースホルダーにより多くの制約を加えるには、選択肢を使うのが一番簡単です。候補となる値のリストを作るだけでOKです。</p>
+
+<pre>use Mojolicious::Lite;
+
+# /test
+# /123
+any '/:foo' =&gt; [foo =&gt; ['test', '123']] =&gt; sub {
+  my $c   = shift;
+  my $foo = $c-&gt;param('foo');
+  $c-&gt;render(text =&gt; "Our :foo placeholder matched $foo");
+};
+
+app-&gt;start;</pre>
+
+<p>すべてのプレースホルダーは、内部で正規表現にコンパイルされます。この処理はカスタマイズすることもできます。<code>^</code>と<code>$</code>を使ったり、<code>(...)</code>でグループのキャプチャは行わないでください。けれどもキャプチャしない<code>(?:...)</code>は大丈夫です。</p>
+
+<pre>use Mojolicious::Lite;
+
+use Mojolicious::Lite;
+# /123
+any '/:bar' =&gt; [bar =&gt; qr/\d+/] =&gt; sub {
+  my $c   = shift;
+  my $bar = $c-&gt;param('bar');
+  $c-&gt;render(text =&gt; "Our :bar placeholder matched $bar");
+};
+
+app-&gt;start;</pre>
+
+<p>生成されたすべての正規表現は、 <a href="/Mojolicious::Command::routes.html">Mojolicious::Command::routes</a>で詳しく確認することができます。</p>
+
+<pre>$ ./myapp.pl routes -v</pre>
+
+<h4><a class='u'
+name="_(Under)"
+>アンダー (Under)</a></h4>
+
+<p>認証や複数のルーティングの間でコードを共有するためには、<a href="/Mojolicious::Lite.html">Mojolicious::Lite</a>の<code>under</code>構文を使う簡単です。以降のすべてのルーティングは、underコールバックが真値を返したときだけ評価されます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# nameパラメータを元にした認証
+# すべてのルートで共有されるグローバルなロジック
+  my $c = shift;
+
+  # 認証された
+  my $name = $c-&gt;param('name') || '';
+  my $name = $self-&gt;param('name') || '';
+
+  # 認証されなかった
+  $c-&gt;render(template =&gt; 'denied');
+  return undef;
+};
+
+# / (with authentication)
+get '/' =&gt; 'index';
+
+app-&gt;start;
+__DATA__;
+
+__DATA__;
+You are not Bender, permission denied.
+
+__DATA__;
+Hi Bender.</pre>
+
+<p>複数のルーティングをあらかじめ決めるために使うのもまた良い利用方法です。</p>
+
+<pre>use Mojolicious::Lite;
+
+# /foo
+under '/foo';
+
+# /foo/bar
+get '/bar' =&gt; {text =&gt; 'foo bar'};
+
+# /foo/baz
+get '/baz' =&gt; {text =&gt; 'foo baz'};
+
+# /
+under '/' =&gt; {msg =&gt; 'whatever'};
+
+# /bar
+get '/bar' =&gt; {inline =&gt; '&lt;%= $msg %&gt; works'};
+
+app-&gt;start;</pre>
+
+<p><a href="/Mojolicious::Lite.html">Mojolicious::Lite</a>の<code>group</code>で関連するルーティングをグループ化(<code>group</code>)することもできます。これによって、<code>under</code>で生成したルートをネストできるようになります。</p>
+
+<pre>use Mojolicious::Lite;
+
+# すべてのルートで共有されるグローバルなロジック
+# すべてのルートで共有されるグローバルなロジック
+  my $c = shift;
+  return 1 if $c-&gt;req-&gt;headers-&gt;header('X-Bender');
+  $c-&gt;render(text =&gt; "You're not Bender.");
+  return undef;
+};
+
+# Adminの部分
+group {
+
+  # グループ内のルートだけに共有されるローカルなロジック
+  under '/admin' =&gt; sub {
+    my $c = shift;
+    return 1 if $c-&gt;req-&gt;headers-&gt;header('X-Awesome');
+    $c-&gt;render(text =&gt; "You're not awesome enough.");
+    return undef;
+  };
+
+  # GET /admin/dashboard
+  get '/dashboard' =&gt; {text =&gt; 'Nothing to see here yet.'};
+};
+
+# GET /welcome
+get '/welcome' =&gt; {text =&gt; 'Hi Bender.'};
+
+app-&gt;start;</pre>
+
+<h4><a class='u'
+name="_"
+>フォーマット</a></h4>
+
+<p>フォーマット（formats）は、<code>.html</code>などのファイル拡張子によって自動的に検出されます。フォーマットは正しいテンプレートを探したり、正確な<code>Content-Type</code>ヘッダーを生成するために使用されます。</p>
+
+<pre>use Mojolicious::Lite;
+
+use Mojolicious::Lite;
+# /detection.html
+# /detection.txt
+get '/detection' =&gt; sub {
+  my $c = shift;
+  $c-&gt;render(template =&gt; 'detected');
+};
+
+app-&gt;start;
+__DATA__;
+
+@@ detected.html.ep
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;&lt;title&gt;Detected&lt;/title&gt;&lt;/head&gt;
+  &lt;body&gt;HTML was detected.&lt;/body&gt;
+&lt;/html&gt;
+
+@@ detected.txt.ep
+TXT was detected.</pre>
+
+<p>デフォルトのフォーマットは <code>html</code>です。プレースホルダで制限すれば、取りうる値を限定できます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# /hello.json
+# /hello.txt
+get '/hello' =&gt; [format =&gt; ['json', 'txt']] =&gt; sub {
+  my $c = shift;
+  return $c-&gt;render(json =&gt; {hello =&gt; 'world'})
+    if $c-&gt;stash('format') eq 'json';
+  $c-&gt;render(text =&gt; 'hello world');
+};
+
+app-&gt;start;</pre>
+
+<p>フォーマットの検知は、特別なタイプのプレースホルダーを使うことで無効にすることもできます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# /hello
+get '/hello' =&gt; [format =&gt; 0] =&gt; {text =&gt; 'No format detection.'};
+
+# 検出を無効にして、以降のルートにおいて必要であれば再び有効にする
+under [format =&gt; 0];
+
+# /foo
+get '/foo' =&gt; {text =&gt; 'No format detection again.'};
+
+# /bar.txt
+get '/bar' =&gt; [format =&gt; 'txt'] =&gt; {text =&gt; ' Just one format.'};
+
+app-&gt;start;</pre>
+
+<h4><a class='u'
+name="_"
+>コンテントネゴシエーション</a></h4>
+
+<p>異なる方法で表現されるリソースや本当にRESTfulなコンテントネゴーシエーションが必要な場合は、<a href="/Mojolicious::Plugin::DefaultHelpers.html">Mojolicious::Plugin::DefaultHelpers</a>の<code>respond_to</code>を使用することもできます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# /hello (Accept: application/json)
+# /hello (Accept: application/xml)
+# /hello.json
+# /hello.xml
+# /hello?format=json
+# /hello?format=xml
+# "hello.html.ep"というテンプレートを描画
+  my $c = shift;
+  $c-&gt;respond_to(
+    json =&gt; {json =&gt; {hello =&gt; 'world'}},
+    xml  =&gt; {text =&gt; '&lt;hello&gt;world&lt;/hello&gt;'},
+    any  =&gt; {data =&gt; '', status =&gt; 204}
+  );
+};
+
+app-&gt;start;</pre>
+
+<p>MIMEタイプのマッピングは、<a href="/Mojolicious.html">Mojolicious</a>の<code>types</code>によって拡張したり、変更したりすることができます。</p>
+
+<pre>app-&gt;types-&gt;type(rdf =&gt; 'application/rdf+xml');</pre>
+
+<h4><a class='u'
+name="_"
+>静的ファイル</a></h4>
+
+<p>テンプレートに似て、静的ファイルは<code>DATA</code>セクションの中にインラインで記述することができ、自動的にサーブされます。ただし、使える拡張子が1種類に限られるのと、Base64エンコーディングが使える点が異なります。</p>
+
+<pre>use Mojolicious::Lite;
+
+app-&gt;start;
+__DATA__;
+
+@@ something.js
+alert('hello!');
+
+@@ test.txt (base64)
+dGVzdCAxMjMKbGFsYWxh</pre>
+
+<p>外部に置いた静的ファイルは、拡張子が1種類に制限されず、<code>public</code>ディレクトリが存在すればそこから自動的にサーブされます。</p>
+
+<pre>$ mkdir public
+$ mv something.js public/something.js
+$ mv mojolicious.tar.gz public/mojolicious.tar.gz</pre>
+
+<p>両方とも優先度は<code>GET</code>、<code>HEAD</code>リクエストのルーティングよりも高くなります。 <code>Range</code>、<code>If-None-Match</code>、<code>If-Modified-Since</code>ヘッダー によるコンテンツネゴシエーションにも対応していて、 <a href="/Mojolicious::Command::get.html">Mojolicious::Command::get</a>で簡単にテストできます。</p>
+
+<pre>$ ./myapp.pl get /something.js -v -H 'Range: bytes=2-4'</pre>
+
+<h4><a class='u'
+name="_"
+>外部テンプレート</a></h4>
+
+<p>外部テンプレートは、レンダラによって<code>templates</code> ディレクトリから検索されます。</p>
+
+<pre>$ mkdir -p templates/foo
+$ echo 'Hello World!' &gt; templates/foo/bar.html.ep</pre>
+
+<p>これらは<code>DATA</code>セクションにあるテンプレートよりも優先されます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# "templates/foo/bar.html.ep"というテンプレートを描画する
+any '/external' =&gt; sub {
+  my $c = shift;
+  $c-&gt;render(template =&gt; 'foo/bar');
+};
+
+app-&gt;start;</pre>
+
+<h4><a class='u'
+name="_"
+>ホーム</a></h4>
+
+<p><a href="/Mojolicious.html">Mojolicious</a>の<code>home</code> を使うと、アプリケーションがホームとしているディレクトリにアクセスできます。ホームディレクトリは、アプリケーションがpublic, templatesディレクトリを検索する場所です。ここにあらゆる種類のアプリケーションデータを保存することもできます。</p>
+
+<pre>$ mkdir cache
+$ echo 'Hello World!' &gt; cache/hello.txt</pre>
+
+<p><a href="/Mojo::Home.html">Mojo::Home</a> には <a href="/Mojo::File.html">Mojo::File</a>から継承した便利なメソッドがたくさんあります。たとえば、<a href="/Mojo::File.html">Mojo::File</a>の<code>child</code>や<code>slurp</code>は、アプリケーションを様々なオペレーティングシステムにまたがって使用できるようにしています。</p>
+
+<pre>use Mojolicious::Lite;
+
+# メッセージをメモリに読み込む
+my $hello = app-&gt;home-&gt;child('cache', 'hello.txt')-&gt;slurp;
+
+# メッセージを表示する
+get '/' =&gt; sub {
+  my $c = shift;
+  $c-&gt;render(text =&gt; $hello);
+};</pre>
+
+<p><a href="/Mojolicious::Command::eval.html">Mojolicious::Command::eval</a> を使うことでも、コマンドラインからアプリケーションを検証できます。</p>
+
+<pre>$ ./myapp.pl eval -v 'app-&gt;home'</pre>
+
+<h4><a class='u'
+name="_"
+>条件</a></h4>
+
+<p><a href="/Mojolicious::Plugin::HeaderCondition.html">Mojolicious::Plugin::HeaderCondition</a> の<code>agent</code>や<code>host</code>といった条件 を使用すれば、より強力なルーティングを構築できます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# Firefox
+get '/foo' =&gt; (agent =&gt; qr/Firefox/) =&gt; sub {
+  my $c = shift;
+  $c-&gt;render(text =&gt; 'Congratulations, you are using a cool browser.');
+};
+
+# Internet Explorer
+get '/foo' =&gt; (agent =&gt; qr/Internet Explorer/) =&gt; sub {
+  my $c = shift;
+  $c-&gt;render(text =&gt; 'Dude, you really need to upgrade to Firefox.');
+};
+
+# http://mojolicious.org/bar
+get '/bar' =&gt; (host =&gt; 'mojolicious.org') =&gt; sub {
+  my $c = shift;
+  $c-&gt;render(text =&gt; 'Hello Mojolicious.');
+};
+
+app-&gt;start;</pre>
+
+<h4><a class='u'
+name="_"
+>セッション</a></h4>
+
+<p><a href="/Mojolicious::Plugin::DefaultHelpers.html">Mojolicious::Plugin::DefaultHelpers</a>の<code>session</code>ヘルパーを使うとすぐに、クッキーをベースとしたセッションが機能します。すべてのセッションデータは<a href="/Mojo::JSON.html">Mojo::JSON</a>でシリアライズされ、 クライアントサイドに保存されることを意識しておいてください。改ざんを防ぐために、暗号化された署名がついています。</p>
+
+<pre>use Mojolicious::Lite;
+
+# アクションとテンプレートの中のセッションデータへのアクセス
+get '/counter' =&gt; sub {
+  my $c = shift;
+  $c-&gt;session-&gt;{counter}++;
+};
+
+app-&gt;start;
+__DATA__;
+
+__DATA__;
+Counter: &lt;%= session 'counter' %&gt;</pre>
+
+<p>署名付き(signed)クッキーを本当に改ざんできなくするには、<a href="/Mojolicious.html">Mojolicious</a>の<code>secret</code>をカスタムして使用してください。</p>
+
+<pre>app-&gt;secrets(['My secret passphrase here']);</pre>
+
+<h4><a class='u'
+name="_"
+>ファイルアップロード</a></h4>
+
+<p>ファイルは、<code>multipart/form-data</code>リクエストを通してアップロードされると、自動的に <a href="/Mojolicious::Controller.html">Mojolicious::Controller</a>の<code>param</code>から<a href="/Mojo::Upload.html">Mojo::Upload</a>のインスタンスとして利用可能になります。 メモリの使用率を気にする必要はありません。<code>250KB</code>を超えるすべてのファイルは自動的に一時ファイルに保存されるからです。HTMLフォームを効率的に構築するために、 <a href="/Mojolicious::Plugin::TagHelpers.html">Mojolicious::Plugin::TagHelpers</a>の<code>form_for</code>のような タグヘルパーを使うこともできます。</p>
+
+<pre>use Mojolicious::Lite;
+
+# DATAセクションのformをアップロード
+get '/' =&gt; 'form';
+
+# Multipartのアップロードのハンドラ
+post '/upload' =&gt; sub {
+  my $c = shift;
+
+  # ファイルサイズのチェック
+  return $c-&gt;render(text =&gt; 'File is too big.', status =&gt; 200)
+    if $c-&gt;req-&gt;is_limit_exceeded;
+
+  # アップロードしたファイルを処理
+  return $c-&gt;redirect_to('form') unless my $example = $c-&gt;param('example');
+  my $size = $example-&gt;size;
+  my $name = $example-&gt;filename;
+  $c-&gt;render(text =&gt; "Thanks for uploading $size byte file $name.");
+};
+
+app-&gt;start;
+__DATA__;
+
+@@ form.html.ep
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;&lt;title&gt;Upload&lt;/title&gt;&lt;/head&gt;
+  &lt;body&gt;
+    %= form_for upload =&gt; (enctype =&gt; 'multipart/form-data') =&gt; begin
+      %= file_field 'example'
+      %= submit_button 'Upload'
+    % end
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+<p>極端に大きなファイルから保護するために、デフォルトで<code>16MB</code>の制限があります。サイズは<a href="/Mojolicious.html">Mojolicious</a>の<code>max_request_size</code> 属性で変更できます。</p>
+
+<pre># 制限を1GBに増やす
+app-&gt;max_request_size(1073741824);</pre>
+
+<h4><a class='u'
+name="_"
+>ユーザーエージェント</a></h4>
+
+<p><a href="/Mojo::UserAgent.html">Mojo::UserAgent</a>は、完全に機能を備えたHTTP 1.1とWebSocketの組み込みのユーザーエージェントです。<a href="/Mojolicious::Plugin::DefaultHelpers.html">Mojolicious::Plugin::DefaultHelpers</a>の<code>ua</code>を通して利用できます。特に<a href="/Mojo::JSON.html">Mojo::JSON</a>と<a href="/Mojo::DOM.html">Mojo::DOM</a>の組み合わせはとても強力なツールになります。</p>
+
+<pre>use Mojolicious::Lite;
+
+# ブロッキング
+# ブロッキング
+  my $c   = shift;
+  my $url = $c-&gt;param('url') || 'https://mojolicious.org';
+  my $dom = $c-&gt;ua-&gt;get($url)-&gt;result-&gt;dom;
+  $c-&gt;render(json =&gt; $dom-&gt;find('h1, h2, h3')-&gt;map('text')-&gt;to_array);
+};
+
+# ノンブロッキング
+get '/title' =&gt; sub {
+  my $c = shift;
+  $c-&gt;ua-&gt;get('mojolicious.org' =&gt; sub {
+    my ($ua, $tx) = @_;
+    $c-&gt;render(data =&gt; $tx-&gt;result-&gt;dom-&gt;at('title')-&gt;text);
+  });
+};
+
+# 並列のノンブロッキング
+get '/titles' =&gt; sub {
+  my $c  = shift;
+  my $c = shift;
+  my $cpan = $c-&gt;ua-&gt;get_p('https://metacpan.org');
+  Mojo::Promise-&gt;all($mojo, $cpan)-&gt;then(sub {
+    my ($mojo, $cpan) = @_;
+    $c-&gt;render(json =&gt; {
+      mojo =&gt; $mojo-&gt;[0]-&gt;result-&gt;dom-&gt;at('title')-&gt;text,
+      cpan =&gt; $cpan-&gt;[0]-&gt;result-&gt;dom-&gt;at('title')-&gt;text
+    });
+  })-&gt;wait;
+};
+
+app-&gt;start;</pre>
+
+<p>ユーザーエージェントについてより詳しい情報は、<a href="/Mojolicious::Guides::Cookbook.html">Mojolicious::Guides::Cookbook</a>の<code>ユーザーエージェント</code>の項目にあります。</p>
+
+<h4><a class='u'
+name="WebSocket"
+>WebSocket</a></h4>
+
+<p>WebSocketアプリケーションはこれまでに見たこともないくらい簡単です。<a href="/Mojo::Transaction::WebSocket.html">Mojo::Transaction::WebSocket</a>の<code>json</code>と同じイベントを、<a href="/Mojolicious::Controller.html">Mojolicious::Controller</a>の<code>on</code>を使って購読することによってメッセージを受信できます。メッセージを送信するには <a href="/Mojolicious::Controller.html">Mojolicious::Controller</a>の<code>send</code>を使います。</p>
+
+<pre>use Mojolicious::Lite;
+
+use Mojolicious::Lite;
+  my $c = shift;
+  $c-&gt;on(json =&gt; sub {
+    my ($c, $hash) = @_;
+    my ($self, $hash) = @_;
+    $c-&gt;send({json =&gt; $hash});
+  });
+};
+
+get '/' =&gt; 'index';
+
+app-&gt;start;
+__DATA__;
+
+__DATA__;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Echo&lt;/title&gt;
+    &lt;script&gt;
+      var ws = new WebSocket('&lt;%= url_for('echo')-&gt;to_abs %&gt;');
+      ws.onmessage = function (event) {
+        document.body.innerHTML += JSON.parse(event.data).msg;
+      };
+      ws.onopen = function (event) {
+        ws.send(JSON.stringify({msg: 'I ♥ Mojolicious!'}));
+      };
+    &lt;/script&gt;
+  &lt;/head&gt;
+&lt;/html&gt;</pre>
+
+<p>リアルタイムウェブ機能についてのより詳しい情報は、<a href="/Mojolicious::Guides::Cookbook.html">Mojolicious::Guides::Cookbook</a>の<code>REAL-TIME WEB</code>にあります。</p>
+
+<h4><a class='u'
+name="_"
+>モード</a></h4>
+
+<p>ポータブルにデバッグメッセージを収集するために、<a href="/Mojo.html">Mojo</a>の<code>log</code>メソッドで<a href="/Mojo::Log.html">Mojo::Log</a>オブジェクトを利用できます。<a href="/Mojolicious.html">Mojolicious</a>の処理モードを変更することによって、後のプロダクション用の設定においてデバッグを自動的に無効化することができます。これは<a href="/Mojolicious.html">Mojolicious</a>の<code>mode</code>属性によって読み取り可能です。</p>
+
+<pre>use Mojolicious::Lite;
+
+# startupの間にモードに合ったメッセージを準備する
+my $msg = app-&gt;mode eq 'development' ?'Development!' : 'Something else!';
+
+get '/' =&gt; sub {
+  my $c = shift;
+  $c-&gt;app-&gt;log-&gt;debug('Rendering mode specific message');
+  $c-&gt;render(text =&gt; $msg);
+};
+
+app-&gt;log-&gt;debug('Starting application.');
+app-&gt;start;</pre>
+
+<p>デフォルトの処理モードは通常 <code>development</code>ですが、コマンドラインオプションか <code>MOJO_MODE</code>あるいは<code>PLACK_ENV</code>環境変数によって変更することもできます。<code>development</code>以外のモードでは、ログレベルが<code>debug</code>から<code>info</code>に上がります。</p>
+
+<pre>$ ./myapp.pl daemon -m production</pre>
+
+<p>すべてのメッセージは<code>STDERR</code>に出力されるか、 <code>log</code>ディレクトリが存在する場合は<code>log/$mode.log</code>に出力されます。</p>
+
+<pre>$ mkdir log</pre>
+
+<p>モードの変更は、<code>exception</code>や<code>not_found</code>テンプレートなどのフレームワークのその他の面に影響します。モードを<code>development</code>から<code>production</code>に切り替えると 、例外ページに機密情報が表示されなくなります。</p>
+
+<h4><a class='u'
+name="_"
+>テスト</a></h4>
+
+<p>アプリケーションをテストするのはとても簡単です。<code>t</code>ディレクトリを作成して 普通のPerlの単体テストを書くだけです。<a href="/Test::Mojo.html">Test::Mojo</a>のおかげで、 とても楽しいです。</p>
+
+<pre>use Test::More;
+use Mojo::File 'path';
+use Test::Mojo;
+
+# Portably point to "../myapp.pl"
+my $script = path(__FILE__)-&gt;dirname-&gt;sibling('myapp.pl');
+
+my $t = Test::Mojo-&gt;new($script);
+$t-&gt;get_ok('/')-&gt;status_is(200)-&gt;content_like(qr/Funky/);
+
+done_testing();</pre>
+
+<p>テストは<code>prove</code>で実行します。</p>
+
+<pre>$ prove -l -v
+$ prove -l -v t/basic.t</pre>
+
+</h2> -->
+<html><head><title>名前</title>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" >
 </head>
 <body class='pod'>
 <!--
   generated by Pod::Simple::HTML v3.40,
   using Pod::Simple::PullParser v3.40,
-  under Perl v5.028000 at Mon Jul 27 02:52:00 2020 GMT.
+  under Perl v5.028000 at Mon Jul 27 03:28:34 2020 GMT.
 
  If you want to change this HTML document, you probably shouldn't do that
    by changing it directly.  Instead, see about changing the calling options
@@ -66,7 +1028,7 @@
 <!-- start doc -->
 <a name='___top' class='dummyTopAnchor' ></a>
 
-<h2><a href="/Mojolicious::Guides::Tutorial.html">Mojolicious::Guides::Tutorial - Mojoliciousをはじめよう</a></h2>
+<h2>Mojolicious::Guides::Tutorial - Mojoliciousをはじめよう</h2>
 
 <h3><a class='u'
 name="_"
